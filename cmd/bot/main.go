@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
+	"github.com/Ilya837/GoTgMod/internal/service/product"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 )
@@ -28,14 +30,58 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
+	productService := product.NewService()
+
 	for update := range updates {
+
+		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+
 		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "You wrote: "+update.Message.Text)
-			msg.ReplyToMessageID = update.Message.MessageID
+			switch update.Message.Command() {
+			case "help":
+				Help(bot, update.Message)
+			case "list":
+				ListHandler(bot, update.Message, *productService)
+			default:
+				defaultHandler(bot, update.Message)
+			}
 
-			bot.Send(msg)
 		}
 	}
+}
+
+func ListHandler(bot *tgbotapi.BotAPI, inputMessage *tgbotapi.Message, productService product.Service) {
+	products := productService.List()
+
+	msgText := ""
+
+	for _, p := range products {
+		msgText += p.Title
+		msgText += "\n"
+	}
+
+	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, msgText)
+	msg.ReplyToMessageID = inputMessage.MessageID
+
+	bot.Send(msg)
+}
+
+func defaultHandler(bot *tgbotapi.BotAPI, inputMessage *tgbotapi.Message) {
+	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "You wrote: "+inputMessage.Text)
+	msg.ReplyToMessageID = inputMessage.MessageID
+
+	bot.Send(msg)
+
+}
+
+func Help(bot *tgbotapi.BotAPI, inputMessage *tgbotapi.Message) {
+	msg := tgbotapi.NewMessage(inputMessage.Chat.ID,
+		strings.Join([]string{
+			"/help - help",
+			"/list - list"},
+			"\n"))
+	msg.ReplyToMessageID = inputMessage.MessageID
+
+	bot.Send(msg)
 }
