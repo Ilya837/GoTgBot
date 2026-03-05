@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -14,36 +16,92 @@ func (commander Commander) Default(inputMessage *tgbotapi.Message) {
 
 }
 
+type Command struct {
+	T     string `json:"type"`
+	From  int    `json:"from"`
+	Count int    `json:"count"`
+}
+
 func (commander Commander) HandleUpdate(update *tgbotapi.Update) {
 
-	defer commander.panicHandler(update.Message)
+	defer commander.panicHandler(update)
 
-	log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+	if update.CallbackQuery != nil {
 
-	if update.Message == nil {
+		log.Printf("[%s] %s", update.CallbackQuery.Message.From.UserName, update.CallbackQuery.Data)
+
+		command := Command{}
+
+		err := json.Unmarshal([]byte(update.CallbackQuery.Data), &command)
+
+		if err != nil {
+			log.Println("unmarshaling error")
+			commander.serverErrorHandler(update.CallbackQuery.Message)
+			return
+		}
+
+		commander.sendMessage(
+			fmt.Sprintf("Data: %+v", command),
+			update.CallbackQuery.Message)
+
 		return
 	}
 
-	switch update.Message.Command() {
-	case "help":
-		commander.Help(update.Message)
-	case "list":
-		commander.List(update.Message)
-	case "get":
-		commander.Get(update.Message)
-	default:
-		commander.Default(update.Message)
+	if update.Message != nil {
+
+		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+
+		switch update.Message.Command() {
+		case "help":
+			commander.Help(update.Message)
+		case "list":
+			commander.List(update.Message)
+		case "get":
+			commander.Get(update.Message)
+		default:
+			commander.Default(update.Message)
+		}
+
+		return
 	}
 
 }
 
-func (commander Commander) panicHandler(inputMessage *tgbotapi.Message) {
+func (commander Commander) panicHandler(update *tgbotapi.Update) {
 	if panicValue := recover(); panicValue != nil {
 		log.Println("recovered from panic: ", panicValue)
 
-		msg := tgbotapi.NewMessage(inputMessage.Chat.ID, "server error")
-		msg.ReplyToMessageID = inputMessage.MessageID
+		if update.CallbackQuery != nil {
 
-		commander.bot.Send(msg)
+			commander.serverErrorHandler(update.CallbackQuery.Message)
+
+		} else if update.Message != nil {
+
+			commander.serverErrorHandler(update.Message)
+		}
 	}
+}
+
+func (commander Commander) serverErrorHandler(inputMessage *tgbotapi.Message) {
+
+	commander.sendMessage(
+		"server error",
+		inputMessage)
+}
+
+func (commander Commander) sendMessage(text string, inputMessage *tgbotapi.Message) {
+
+	msgText := fmt.Sprintln(text)
+	msg := tgbotapi.NewMessage(inputMessage.Chat.ID, msgText)
+	msg.ReplyToMessageID = inputMessage.MessageID
+
+	_, err := commander.bot.Send(msg)
+
+	if err != nil {
+		log.Println("Send error")
+		return
+	}
+
+	log.Printf("request sended")
+
 }

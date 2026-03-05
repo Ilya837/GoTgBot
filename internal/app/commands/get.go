@@ -14,30 +14,32 @@ func (commander Commander) Get(inputMessage *tgbotapi.Message) {
 	idx, err := strconv.Atoi(args)
 
 	if err != nil {
-		log.Println("wrong args", args)
+		log.Printf("wrong args: %s", args)
 
-		msg := tgbotapi.NewMessage(inputMessage.Chat.ID, fmt.Sprint("wrong args", args))
-		msg.ReplyToMessageID = inputMessage.MessageID
-		commander.bot.Send(msg)
+		commander.sendMessage(
+			fmt.Sprintf("wrong args: %s", args),
+			inputMessage)
 		return
 	}
 
 	product, err := commander.productService.Get(idx)
 
 	if err != nil {
-		msgText := fmt.Sprintf("fail to get product with idf: %d: %v", idx, err)
-		log.Printf(msgText)
-		msg := tgbotapi.NewMessage(inputMessage.Chat.ID, msgText)
-		msg.ReplyToMessageID = inputMessage.MessageID
-		commander.bot.Send(msg)
+		commander.sendMessage(
+			fmt.Sprintf("fail to get product with id %d: %v", idx, err),
+			inputMessage)
 		return
 	}
 
-	msg := tgbotapi.NewMessage(
-		inputMessage.Chat.ID,
-		fmt.Sprintf(product.Title))
+	if product == nil {
+		commander.sendMessage(
+			fmt.Sprintf("product with id %d is not exist", idx),
+			inputMessage)
+		return
+	}
 
-	msg.ReplyToMessageID = inputMessage.MessageID
-	commander.bot.Send(msg)
+	commander.sendMessage(
+		product.Title,
+		inputMessage)
 
 }

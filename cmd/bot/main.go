@@ -23,6 +23,8 @@ func main() {
 
 	//bot.Debug = true
 
+	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
