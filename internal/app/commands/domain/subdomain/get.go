@@ -1,4 +1,4 @@
-package commands
+package subdomain
 
 import (
 	"fmt"
@@ -14,15 +14,19 @@ func (commander Commander) Get(inputMessage *tgbotapi.Message) {
 	idx, err := strconv.Atoi(args)
 
 	if err != nil {
-		log.Printf("wrong args: %s", args)
+		commander.WrongFormat(inputMessage, "/get__domain__subdomain id")
+		return
+	}
 
+	if idx < 0 {
+		log.Printf("id must be more than 0: %s", args)
 		commander.sendMessage(
-			fmt.Sprintf("wrong args: %s", args),
+			fmt.Sprintf("id must be more than 0: %s", args),
 			inputMessage)
 		return
 	}
 
-	product, err := commander.productService.Get(idx)
+	product, err := (*commander.Service).Describe(uint64(idx))
 
 	if err != nil {
 		commander.sendMessage(
