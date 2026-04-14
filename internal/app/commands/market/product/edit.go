@@ -1,11 +1,11 @@
-package subdomain
+package product
 
 import (
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/Ilya837/GoTgMod/internal/model/domain"
+	"github.com/Ilya837/GoTgMod/internal/model/market"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -14,7 +14,7 @@ func (commander Commander) Edit(inputMessage *tgbotapi.Message) {
 	split := strings.Split(args, " ")
 
 	if len(split) > 2 {
-		commander.WrongFormat(inputMessage, "/edit__domain__subdomain id title")
+		commander.WrongFormat(inputMessage, "/edit__market__product id title")
 		return
 	}
 
@@ -30,7 +30,7 @@ func (commander Commander) Edit(inputMessage *tgbotapi.Message) {
 		return
 	}
 
-	err = (*commander.Service).Update(uint64(id), domain.Subdomain{Title: split[1]})
+	err = (*commander.Service).Update(uint64(id), market.Product{Title: split[1]})
 
 	if err != nil {
 		log.Println("error in Update method")

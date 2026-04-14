@@ -1,11 +1,11 @@
-package subdomain
+package product
 
 import (
-	service "github.com/Ilya837/GoTgMod/internal/service/domain/subdomain"
+	service "github.com/Ilya837/GoTgMod/internal/service/market/product"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type SubdomainCommander interface {
+type ProductCommander interface {
 	Help(inputMsg *tgbotapi.Message)
 	Get(inputMsg *tgbotapi.Message)
 	List(inputMsg *tgbotapi.Message)
@@ -21,9 +21,9 @@ type SubdomainCommander interface {
 
 type Commander struct {
 	bot     *tgbotapi.BotAPI
-	Service *service.SubdomainService
+	Service *service.ProductService
 }
 
-func NewSubdomainCommander(bot *tgbotapi.BotAPI, service service.SubdomainService) SubdomainCommander {
+func NewProductCommander(bot *tgbotapi.BotAPI, service service.ProductService) ProductCommander {
 	return &Commander{bot: bot, Service: &service}
 }

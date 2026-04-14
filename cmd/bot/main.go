@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	commands "github.com/Ilya837/GoTgMod/internal/app/commands/domain/subdomain"
-	service "github.com/Ilya837/GoTgMod/internal/service/domain/subdomain"
+	commands "github.com/Ilya837/GoTgMod/internal/app/commands/market/product"
+	service "github.com/Ilya837/GoTgMod/internal/service/market/product"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 )
@@ -34,7 +34,7 @@ func main() {
 
 	productService := service.NewService()
 
-	commander := commands.NewSubdomainCommander(bot, productService)
+	commander := commands.NewProductCommander(bot, productService)
 
 	for update := range updates {
 
@@ -43,7 +43,7 @@ func main() {
 	}
 }
 
-func handleUpdate(commander *commands.SubdomainCommander, update *tgbotapi.Update) {
+func handleUpdate(commander *commands.ProductCommander, update *tgbotapi.Update) {
 
 	defer panicHandler(commander, update)
 
@@ -57,17 +57,17 @@ func handleUpdate(commander *commands.SubdomainCommander, update *tgbotapi.Updat
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 		switch update.Message.Command() {
-		case "help__domain__subdomain":
+		case "help__market__product":
 			(*commander).Help(update.Message)
-		case "list__domain__subdomain":
+		case "list__market__product":
 			(*commander).List(update.Message)
-		case "get__domain__subdomain":
+		case "get__market__product":
 			(*commander).Get(update.Message)
-		case "delete__domain__subdomain":
+		case "delete__market__product":
 			(*commander).Delete(update.Message)
-		case "new__domain__subdomain":
+		case "new__market__product":
 			(*commander).New(update.Message)
-		case "edit__domain__subdomain":
+		case "edit__market__product":
 			(*commander).Edit(update.Message)
 		default:
 			(*commander).Default(update.Message)
@@ -78,7 +78,7 @@ func handleUpdate(commander *commands.SubdomainCommander, update *tgbotapi.Updat
 
 }
 
-func panicHandler(commander *commands.SubdomainCommander, update *tgbotapi.Update) {
+func panicHandler(commander *commands.ProductCommander, update *tgbotapi.Update) {
 	if panicValue := recover(); panicValue != nil {
 		log.Println("recovered from panic: ", panicValue)
 

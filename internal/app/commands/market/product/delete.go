@@ -1,4 +1,4 @@
-package subdomain
+package product
 
 import (
 	"log"
@@ -10,7 +10,7 @@ import (
 func (commander Commander) Delete(inputMessage *tgbotapi.Message) {
 	args := inputMessage.CommandArguments()
 	if args == "" {
-		commander.WrongFormat(inputMessage, "/delete__domain__subdomain id")
+		commander.WrongFormat(inputMessage, "/delete__market__product id")
 		return
 	}
 

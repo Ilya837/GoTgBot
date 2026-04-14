@@ -1,4 +1,4 @@
-package subdomain
+package product
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ func (commander Commander) Get(inputMessage *tgbotapi.Message) {
 	idx, err := strconv.Atoi(args)
 
 	if err != nil {
-		commander.WrongFormat(inputMessage, "/get__domain__subdomain id")
+		commander.WrongFormat(inputMessage, "/get__market__product id")
 		return
 	}
 
